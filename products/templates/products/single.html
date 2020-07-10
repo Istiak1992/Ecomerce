@@ -1,0 +1,81 @@
+{% extends 'products/base.html' %}
+{% block content %}
+<style type="text/css">
+	.st_single{
+		margin-left: 10px;
+		margin-right: 10px;
+	}
+
+</style>
+
+<div class="row st_single">
+	<div class="col-sm-4">
+		{% for item in img %}
+		{% if item.feature %}
+			<div class="col-xs-12 col-md-6">
+				<h2>Featured</h2>
+				<img class="img-responsive" src="{{item.image.url}}" width="360" height="460">
+			</div>
+		{% else %}
+			<div class="col-xs-6 col-md-3">
+				<a href="#" class="thumbnail">
+				<img class="img-thumbnail" src="{{item.image.url}}" width="120" height="210" > </a>
+			</div>
+		{% endif %}
+		{% endfor %}
+
+	</div>
+
+	<div class="col-sm-8">
+		
+			<h1>{{product.title}}</h1>
+
+		<div class="col-sm-4">
+
+			<form class="pull-right" method="POST" action="{% url 'add_to_cart' product.id  %}">
+				{% csrf_token %}
+			<input class="form-control btn-block" type="number" value="1" name="qty"> 
+			 {% if product.variation_set.all %}
+
+			 {% if product.variation_set.sizes %}
+			<select class="form-control btn-block" name="size">
+				{% for item in product.variation_set.sizes %}
+				<option value='{{item.title}}'>{{item.title}}</option>
+			
+				{% endfor %}
+				
+			</select>
+			{% endif %}
+
+			{% if product.variation_set.colors %}
+			<select class="form-control btn-block" name="color">
+				{% for item in product.variation_set.colors %}
+				<option value='{{item.title}}'>{{item.title}}</option>
+			
+				{% endfor %}
+				
+			</select>
+			{% endif %}
+
+			{% endif %}
+			
+			<input class="btn btn-info btn-block" type="submit" value="add to cart">
+
+		</form>
+
+		</div>
+		<hr>
+		<p>Price: {{product.sales_price}} SEK  </p>
+		<hr>
+		<p style=" text-align: justify;">{{product.description}}</p>
+	</div>
+
+</div>
+
+{% endblock %}
+
+
+
+
+
+

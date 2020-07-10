@@ -1,0 +1,11 @@
+{% extends "products/base.html" %}
+{% block content %}
+<div style="margin-top: 50px; margin-left: 500px">
+<form method="POST" action="">
+{% csrf_token %}
+{{form.as_p}}
+
+<input type="submit" value="{% if btn %}{{btn}}{% else %}Submit{% endif %}" class="btn btn-success">
+</form>
+</div>
+{% endblock %}

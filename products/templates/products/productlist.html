@@ -1,0 +1,64 @@
+
+
+{% extends 'products/base.html' %}
+{% load static %}
+{% block content %}
+<style type="text/css">
+	.st_product{
+		margin-top: 10px;
+		margin-left: 10px;
+		margin-right: 10px;
+	}
+</style>
+<div class="row st_product">
+{% for product in products %}
+	
+<div class="col-sm-2">
+
+
+<div class="thumbnail">
+	{% if product.productimage_set.all %}
+		{% for item in product.productimage_set.all %}
+		{% if item.feature %}
+		<div style="
+		width: 150px;
+		height: 150px;
+		background-image: url('{{item.image.url}}');
+		background-repeat: no-repeat;
+		background-size: cover;
+		background-position: center;
+		margin: 0 auto;">
+		</div>
+		<!--<img class="img-responsive" src="{{item.image.url}}" width="120" height="120">-->
+		
+
+		{% endif %}
+
+	 	{% endfor %}
+	{% else %}
+
+		<div style="
+		width: 150px;
+		height: 150px;
+		background-image: url('{% static 'images/default.png' %}');
+		background-repeat: no-repeat;
+		background-size: cover;
+		background-position: center;
+		margin: 0 auto;">
+		</div>
+		<!--<img class="img-responsive" src="{% static 'images/default.png' %}" width="120" height="120">-->
+
+
+     {% endif %}
+
+	<div class="caption">
+		<h3>{{product.title}}</h3>
+		<p style="color: #0B7808;">Price: {{product.sales_price}} SEK</p>
+		<p><a href="{% url 'singleproduct' product.id %}" class="btn btn-info" role="button">View</a> <a href="{% url 'add_to_cart' product.id  %}" class="btn btn-info" role="button">Add to Cart</a></p>
+	</div>
+</div>
+</div>
+
+{% endfor %}
+</div>
+{% endblock %}

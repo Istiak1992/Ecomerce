@@ -1,0 +1,46 @@
+{% extends 'products/base.html' %}
+{% load static %}
+{% block content %}
+
+<div class="col-sm-8 col-sm-offset-2">
+{% if empty %}
+<h1 style="text-align: center;">{{empty_message}}</h1>
+{% else %}
+<table class="table">
+	<thead>
+		<th>Item</th>
+		<th>Price</th>
+		<th>QTY</th>
+		<th></th>
+	</thead>
+	<tfoot>
+		<tr>
+			<td></td>
+			<td>Total: {{cart.total}}</td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+	</tfoot>
+	{% for item in cart.cartitem_set.all %}
+	<tr>
+		<td>{{item.product}} {% if item.variations.all %} <ul>{% for subitem in item.variations.all %} <li>{{subitem.category}}:{{subitem.title}}</li> {% endfor %}</ul> {% endif %}</td>
+		<td>{{item.product.sales_price}}</td>
+		<td>{{item.quantity}}</td>
+		
+		<td><a class="btn btn-danger" href="{% url 'remove_from_cart' item.id %}">Remove</a></td>
+		<td></td>
+	</tr>
+	
+	{% endfor %}
+</table>
+<p>
+<a class="btn btn-success" href="{% url 'home' %}">Continue Shopping</a>
+<a class="btn btn-success" href="{% url 'checkout' %}">Checkout</a>
+</p>
+
+{% endif %}
+</div>
+
+
+{% endblock %}
