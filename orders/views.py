@@ -7,8 +7,13 @@ from .models import *
 from .utils import id_generator
 from accounts.forms import UserAddressForm 
 from accounts.models import UserAddress
+from django.conf import settings
 
-# Create your views here.
+try:
+	stripe_pub =settings.STRIPE_PUBLISHABLE_KEY
+except:
+	stripe_pub = "pk_test_giqz4Y9dhjdg6QtIUbuOBahj"
+
 def order(request):
 	context = {}
 	template = 'orders/user.html'
@@ -33,11 +38,16 @@ def checkout(request):
 	except:
 		return HttpResponseRedirect(reverse('cartView'))
 
-	address_form = UserAddressForm(request.POST or None)
-	if address_form.is_valid():
-		new_address = address_form.save(commit=False)
-		new_address.user = request.user
-		new_address.save()
+	try:
+		address_added = request.GET.get("address_added")
+	except:
+		address_added = None
+	if address_added is None:
+		address_form = UserAddressForm()
+	else:
+		address_form = None
+	current_addresses = UserAddress.objects.filter(user=request.user)
+	billing_addresses = UserAddress.objects.get_billing_addresses(user=request.user)
 
 	if new_order.status == "Finished":
 		#cart.delete()
@@ -45,6 +55,7 @@ def checkout(request):
 		del request.session['items_total']
 		return HttpResponseRedirect(reverse('cartView'))
 		
-	context = {'address_form': address_form,}
+	context = {'address_form': address_form, 'current_addresses':current_addresses, 
+	'billing_addresses':billing_addresses, 'stripe_pub':stripe_pub,}
 	template = 'orders/checkout.html'
 	return render(request, template, context)

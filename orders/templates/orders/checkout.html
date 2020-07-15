@@ -1,10 +1,116 @@
 {% extends 'products/base.html' %}
-{% block content %}
-<div class="container" style="margin-top: 10px; margin-left: 400px;">
-	<form method="POST" action="">
-	{% csrf_token %}
+<script type="text/javascript" src="/test/wp-content/themes/child/script/jquery.jcarousel.min.js"></script>
+<script>
+{% block jquery %}
+	Stripe.setPublishableKey('{{ stripe_pub }}');
+jquery(function($){
+	$('#payment-form').submit(function(event){
+		var $form = $(this);
+		$form.find('button').prop('disabled', true);
+		Stripe.card.createToken($form, stripeResponseHandler);
+		return false;
+	});
+});
 
-	{{address_form.as_p}}	<input type="submit" class="btn btn-success" value="Save">
+function stripeResponseHandler(status, response){
+	var $form = $('#payment-form');
+
+	if (response.error){
+		$form.find('.payment-errors').text(response.error.message);
+		$form.find('button').prop('disabled', false);
+	} else {
+		var token = response.id;
+		$form.append($('<input type="hidden" name="stripeToken">').val(token));
+		$form.get(0).submit();
+	}
+};
+{% endblock %}
+</script>
+
+{% block content %}
+
+<div class="row" style="margin-left: 100px; margin-top: 30px;">
+
+	{% if address_form %}
+
+		<div class="col-sm-6">
+		<h2>Add New Shipping Address</h2> 
+		<form method="POST" action="{% url 'add_user_address' %}?next_page=checkout">
+		{% csrf_token %}
+
+		{{address_form.as_p}}	<input type="submit" class="btn btn-success" value="Continue">
+		</form>
+		</div>
+	{% endif %}
+	<form method="POST" action="" id="payment-form">{% csrf_token %}
+	{% if current_addresses %}
+		<div class="col-sm-6"> 
+		<h2>Shipping Address</h2>
+		{% for address in current_addresses %}
+		{% if request.user.userdefaultaddress.shipping.id == address.id %} 
+		<input type="radio" name="shipping_address" value="{{address.id}}" checked="checked"> {{address.get_address}}
+		 <br> 
+		
+		{% else %}
+		
+		<input type="radio" name="shipping_address" value="{{address.id}}"> {{address.get_address}} <br>
+		{% endif %}
+
+		{% endfor %}
+		<br>
+	{% endif %}
+	{% if billing_addresses %}
+		 
+		<h2>Billing Address</h2>
+		{% for address in billing_addresses %}
+		{% if request.user.userdefaultaddress.billing.id == address.id %} 
+		<input type="radio" name="billing_address" value="{{address.id}}" checked="checked"> {{address.get_address}}
+		 <br> 
+		
+		{% else %}
+		
+		<input type="radio" name="billing_address" value="{{address.id}}"> {{address.get_address}} <br>
+		{% endif %}
+		
+		
+		{% endfor %}
+		</div>
+	{% endif %}
+
 	</form>
+
 </div>
+
+<div style="margin-left: 100px;">
+<h2>Credit Card Info</h2>
+<span class="payment-errors"></span>
+
+<div class="form-row">
+<label>
+	<span>Card Number</span>
+	<input type="text" size="20" data-stripe="number">
+</label>
+</div>
+
+<div class="form-row">
+<label>
+	<span>CVC</span>
+	<input type="text" size="4" data-stripe="cvc">
+</label>
+</div>
+
+<div class="form-row">
+<label>
+	<span>Expiration (MM/YYYY)</span>
+	<input type="text" size="2" data-stripe="exp-month">
+</label>
+<span> / </span>
+<input type="text" size="4" data-stripe="exp-year">
+</div>
+
+<button type="submit" class="btn btn-success">Submit Payment</button>
+
+</div>
+
 {% endblock  %}
+

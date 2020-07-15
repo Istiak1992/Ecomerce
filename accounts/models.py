@@ -13,6 +13,22 @@ from localflavor.us.us_states import US_STATES
 from localflavor.se.se_counties import COUNTY_CHOICES
 
 
+class UserDefaultAddress(models.Model):
+	user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+	shipping = models.ForeignKey("UserAddress", null=True, blank=True, 
+		on_delete=models.CASCADE, related_name="user_address_shipping_default")
+	billing = models.ForeignKey("UserAddress", null=True, blank=True,
+	 on_delete=models.CASCADE, related_name="user_address_billing_default")
+
+	def __str__(self):
+		return (self.user.username)
+
+class UserAddressManager(models.Manager):
+	def get_billing_addresses(self, user):
+		return super(UserAddressManager, self).filter(billing=True).filter(user=user)
+
+
+
 class UserAddress(models.Model):
 	user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 	address = models.CharField(max_length=120)
@@ -29,6 +45,13 @@ class UserAddress(models.Model):
 
 	def __str__(self):
 		return str(self.user.username)
+	def get_address(self):
+		return "%s,%s,%s,%s,%s" %(self.address, self.city, self.state, self.country, self.zipcode)
+
+	objects = UserAddressManager()
+
+	class Meta:
+		ordering = ['-updated', '-timestamp']
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
